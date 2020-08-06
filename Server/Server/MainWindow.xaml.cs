@@ -39,8 +39,11 @@ namespace Server
             {
                 receive_msg.Text = "Server Start";
                 IPAddress ip = IPAddress.Parse(host);
+                //socket()
                 server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //bind()
                 server.Bind(new IPEndPoint(ip, port));
+                //listen()
                 server.Listen(10);
 
                 Thread thread = new Thread(Listen);
@@ -53,6 +56,7 @@ namespace Server
         {
             while (true)
             {
+                //accept()
                 Socket client = server.Accept();
 
                 Thread receive = new Thread(ReceiveMsg);
@@ -60,25 +64,28 @@ namespace Server
             }
         }
 
-        //receive client message
+        //receive client message and send to client
         public void ReceiveMsg(object client)
         {
             Socket connection = (Socket)client;
             IPAddress clientIP = (connection.RemoteEndPoint as IPEndPoint).Address;
             receive_msg.Dispatcher.BeginInvoke(
                 new Action(() => { receive_msg.Text += "\n" + clientIP + " connect\n"; }), null);
+            //send welcome message to client
             connection.Send(Encoding.ASCII.GetBytes("Welcome " + clientIP + "\n"));
             while (true)
             {
                 try
                 {
                     byte[] result = new byte[1024];
+                    //receive message from client
                     int receive_num = connection.Receive(result);
                     String receive_str = Encoding.ASCII.GetString(result, 0, receive_num);
                     if (receive_num > 0)
                     {
                         String send_str = clientIP + " : " + receive_str;
 
+                        //resend message to client
                         connection.Send(Encoding.ASCII.GetBytes("You send: " + receive_str));
 
                         receive_msg.Dispatcher.BeginInvoke(
@@ -88,6 +95,7 @@ namespace Server
                 }
                 catch (Exception e)
                 {
+                    //exception close()
                     Console.WriteLine(e);
                     connection.Shutdown(SocketShutdown.Both);
                     connection.Close();
@@ -96,6 +104,7 @@ namespace Server
             }
         }
 
+        //close() when close window
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             Environment.Exit(0);

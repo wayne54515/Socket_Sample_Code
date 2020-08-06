@@ -35,12 +35,15 @@ namespace Client
         {
             //connect to socket server
             IPAddress ip = IPAddress.Parse(host);
+            //socket()
             client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //connect()
             client.Connect(new IPEndPoint(ip, port));
             Thread receiveThread = new Thread(ReceiveMessage);
             receiveThread.Start();
         }
 
+        //send()
         private void Send(object sender, RoutedEventArgs e)
         {
             String text = msg.Text;
@@ -58,6 +61,7 @@ namespace Client
             
         }
 
+        //receive()
         public void ReceiveMessage()
         {
             while (true)
@@ -72,6 +76,7 @@ namespace Client
                 }
                 catch (Exception ex)
                 {
+                    //exception close()
                     client.Shutdown(SocketShutdown.Both);
                     client.Close();
                     break;
